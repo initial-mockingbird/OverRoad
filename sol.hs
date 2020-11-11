@@ -1,3 +1,4 @@
+import           Data.Char (toLower)
 --------------------------------------------------
 {- Data type declaration and global constants. -}
 --------------------------------------------------
@@ -47,9 +48,66 @@ veggieOpts = ["lettuce","tomato","red onion", "caramelized onion", "white onion"
 sauceOpts :: [Sauce]
 sauceOpts = ["bbq","cool ranch","mayo"]
 
+---------------------
+{- Main Functions -}
+---------------------
+
+sandwichChoices :: [Bread] -> [Filling] -> [[Sauce]] -> [Sandwich]
+sandwichChoices breads fillings sauces = Sandwich <$> breads           <*> fillings <*> sauces
+--                                         ^            ^                     ^           ^
+--                                    We map the        ^                     ^           ^
+--                                    Sandwhich         ^                     ^           ^
+--                                    constructor       ^                     ^           ^
+--                                                      ^                     ^           ^
+--                                                 To each bread              ^           ^
+--                                                 to form something          ^           ^
+--                                                 like:                      ^           ^
+--                                                 [Sandwich bread1,          ^           ^
+--                                                  Sandwich bread2,          ^           ^
+--                                                  ...]. Notice              ^           ^
+--                                                 That Sanwich bread         ^           ^
+--                                                 is still a function        ^           ^
+--                                                 that has to take a         ^           ^
+--                                                 filling and a sauce        ^           ^
+--                                                 to produce a proper        ^           ^
+--                                                 sandwich.                  ^           ^
+--                                                                            ^           ^
+--                                                                            |___________|
+--                                                                                  |
+--                                                                                  v
+--                                                                          Finally be combine
+--                                                                          each element in the list
+--                                                                          [Sandwich bread] with each
+--                                                                          possible filling and each
+--                                                                          possible sauce, this is
+--                                                                          possible since <*> applies
+--                                                                          each function in a list
+--                                                                          to each value in another list.
+
+
+main :: IO ()
+main = do
+  putStrLn $ frame "Welcome to OverRoad "
+  userInput <- putStr "Would you like to see an exclusive list of vegetarian options for your filling? (Y/N)" >> getLine
+  if (map toLower userInput) !! 0 == 'y' then prettyPrintList veggieOpts else prettyPrintList (veggieOpts ++ nonVeggieOpts)
+
+
 --------------------
 {- Aux Functions -}
 --------------------
+
+prettyPrintList :: Show a => [a] -> IO ()
+prettyPrintList = undefined
+
+-- | Frames a title. Eg:
+--                                ---------------------
+-- frame "Welome to OverRoad" =  | Welcome to OverRoad |
+--                                ---------------------
+frame :: String -> String
+frame s = line ++ "\n" ++ "| " ++ s ++ " |" ++ "\n" ++ line where
+  -- The length of the top and bottom line must equal to the length of
+  -- the string + 2 since we are adding a little pad to the sides
+  line = " " ++ replicate (length s + 2) '-'
 
 -- | Gets the n-combinations of a  set of elements.
 combs :: Int -> [a] -> [[a]]
