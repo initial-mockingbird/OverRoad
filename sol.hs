@@ -33,8 +33,8 @@ instance Show Sandwich where
            "Sauces: "     ++ show (saucing s)
 
 -- | List of all the bread options
-breadOptions :: [Bread]
-breadOptions = ["wraps","oil-based loave","sourdough"]
+breadOpts :: [Bread]
+breadOpts = ["wraps","oil-based loave","sourdough"]
 
 -- | List of all the non-veggie fillings.
 nonVeggieOpts :: [String]
@@ -115,15 +115,37 @@ main = do
 
   saucesToConsider <- getLine
 
-  printFilteredSandwich fillingInput betos
+  printFilteredSandwich fillingInput betos numberOfFillings saucesToConsider
 
 
   return ()
 
+printFilteredSandwich :: String -> String -> String -> String -> IO ()
+printFilteredSandwich fillingInput betos numberOfFillings saucesToConsider = do
+  let possibleFilling = if toLower (fillingInput !! 0) == 'y' then veggieOpts else mixed
+  let fillings = [filling |(index,filling) <- (zip [1..] possibleFilling), show index `notElem` splitBy (\c -> c ==' ') betos]
+  let sauces = [sauce | (index,sauce) <- (zip [1..] sauceOpts), show index `elem` splitBy (\c -> c ==' ') saucesToConsider ]
+  let f = if fillingInput == "y" then Veggie else Mixture
+  let combinationLength = min (read numberOfFillings) (length fillings)
+  let sandwiches = sandwichChoices breadOpts (map f (combs combinationLength fillings)) [sauces]
+  putStrLn $ show sandwiches
+  return()
 
 --------------------
 {- Aux Functions -}
 --------------------
+-- | Given a list and a function, splits the list
+-- into chunks such that each chunk does not sattisfy the function.
+splitBy :: Eq a => (a -> Bool) -> [a] -> [[a]]
+splitBy = splitBy' []
+
+splitBy' :: Eq a =>  [a] -> (a -> Bool) ->  [a] -> [[a]]
+splitBy' accum _ [] = [accum]
+splitBy' accum f (x:xs)
+  | f x = accum :  splitBy' [] f xs
+  | otherwise = splitBy' (accum ++ [x]) f xs
+
+
 -- | Given a list of printable objects, yields an enumerated list with
 -- the string representation of each object.
 prettyPrintList :: Show a => [a] -> String
