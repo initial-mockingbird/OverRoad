@@ -1,0 +1,23 @@
+
+-- Some types for better understanding.
+-- Components of a Sandwich
+-- | Every Sandwhich starts off with a bread.
+type Bread = String
+-- | As a filling, a Sandwich might have veggies on it.
+type Veggie = String
+-- | It's also desirable to have some sauces to top everything off.
+type Sauce = String
+-- | For the filling, we want to offer our vegetarian friends
+-- an option, therefore we allow the filling to have an exclusive option
+-- for vegetarians.
+data Filling = Veggie [Veggie] | Mixture [String] deriving (Eq,Show)
+
+
+-- | Finally, we declare a Sandwhich as something that has
+-- a bread, some filling, an of course, a list of sauces.
+data Sandwich =
+  {
+  breadType :: Bread,
+  fill      :: Filling,
+  saucing   :: [Sauce]
+  }
