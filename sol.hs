@@ -94,6 +94,7 @@ main :: IO ()
 main = do
   putStrLn $ frame "Welcome to OverRoad"
 
+  -- Retreiving the veggie/nonveggie menu.
   fillingInput <- putStr "Would you like to see an exclusive list of vegetarian options for your filling? (Y/N) " >> getLine
 
   putStrLn "Currently, we have the following ingredients:"
@@ -101,20 +102,24 @@ main = do
   putStrLn "If you would like to beto some ingredients, please do so using the following format: index of item1 index of item 2..."
   putStrLn "Eg: 1 5 3"
 
+  -- Getting which ingredients we can beto.
   betos <- getLine
 
+  -- Getting how many fillings a sandwich must have:
   userInput <- (putStr "Would you like to limit the number of fillings (Y/N): " >> getLine)
 
   numberOfFillings <- case (map toLower userInput) !! 0 of
     'y' -> putStr "Please input the number of fillings you would like to consider: " >> getLine
     _ -> (return . show . length) mixed
 
+  -- Selecting sauces.
   putStrLn "Please select the sauces you would like to consider (do so using the following format: index of item1 index of item 2...): "
   putStrLn "Eg: 1 5 3"
   putStrLn $ prettyPrintList sauceOpts
 
   saucesToConsider <- getLine
 
+  -- Finally process the options and print the result.
   printFilteredSandwich fillingInput betos numberOfFillings saucesToConsider
 
 
@@ -122,12 +127,19 @@ main = do
 
 printFilteredSandwich :: String -> String -> String -> String -> IO ()
 printFilteredSandwich fillingInput betos numberOfFillings saucesToConsider = do
+  -- First we get the veggie / nonveggie menu.
   let possibleFilling = if toLower (fillingInput !! 0) == 'y' then veggieOpts else mixed
+  -- Then we get the fillings we havent beto.
   let fillings = [filling |(index,filling) <- (zip [1..] possibleFilling), show index `notElem` splitBy (\c -> c ==' ') betos]
+  -- Then we get the sauces that we chose.
   let sauces = [sauce | (index,sauce) <- (zip [1..] sauceOpts), show index `elem` splitBy (\c -> c ==' ') saucesToConsider ]
+  -- Aux function in order to build the filling
   let f = if fillingInput == "y" then Veggie else Mixture
+  -- Aux value in order to detemine which n-combination of fillings we would like to have.
   let combinationLength = min (read numberOfFillings) (length fillings)
+  -- Creating sandwiches
   let sandwiches = sandwichChoices breadOpts (map f (combs combinationLength fillings)) [sauces]
+  -- pretty printing the sandwiches.
   putStrLn $ concatMap (\s -> show s ++"\n") sandwiches
   return()
 
