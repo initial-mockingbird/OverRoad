@@ -1,4 +1,5 @@
 import           Data.Char (toLower)
+import           Data.List (subsequences)
 --------------------------------------------------
 {- Data type declaration and global constants. -}
 --------------------------------------------------
@@ -89,7 +90,13 @@ sandwichChoices breads fillings sauces = Sandwich <$> breads           <*> filli
 --                                                                          each function in a list
 --                                                                          to each value in another list.
 
+-- | Gives every sandwhich possible.
+allSandwich :: [Sandwich]
+allSandwich = sandwichChoices breadOpts allFillings allSauces where
+  allFillings = map Veggie (subsequences veggieOpts) ++ map Mixture (subsequences nonVeggieOpts )
+  allSauces = subsequences sauceOpts
 
+-- | Main function, serves as menu
 main :: IO ()
 main = do
   putStrLn $ frame "Welcome to OverRoad"
