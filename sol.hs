@@ -128,7 +128,7 @@ printFilteredSandwich fillingInput betos numberOfFillings saucesToConsider = do
   let f = if fillingInput == "y" then Veggie else Mixture
   let combinationLength = min (read numberOfFillings) (length fillings)
   let sandwiches = sandwichChoices breadOpts (map f (combs combinationLength fillings)) [sauces]
-  putStrLn $ show sandwiches
+  putStrLn $ concatMap (\s -> show s ++"\n") sandwiches
   return()
 
 --------------------
@@ -173,7 +173,8 @@ frame s = line ++ "\n" ++  paddedString ++ line where
   -- We get the length of the max line
   maxLine = maximum $ map length wholeTextByLines
   -- Finally, we add the | line | pad.
-  paddedString = concatMap (\s -> "| " ++ s ++ " |\n") wholeTextByLines
+  pad = \s -> replicate (maxLine + 1 - length s) ' '
+  paddedString = concatMap (\s -> "| " ++ s ++ pad s ++ "|\n") wholeTextByLines
 
 -- | Gets the n-combinations of a  set of elements.
 combs :: Int -> [a] -> [[a]]
