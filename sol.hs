@@ -27,9 +27,10 @@ data Sandwich = Sandwich
   } deriving (Eq)
 
 instance Show Sandwich where
-  show s = "Bread Type: " ++ breadType s      ++ "\n" ++
-           "Filling: "    ++ show (fill s)    ++ "\n"  ++
-           "Sauces: "     ++ show (saucing s) ++ "\n"
+  show s = frame $
+           "Bread Type: " ++ breadType s      ++ "\n" ++
+           "Filling: "    ++ show (fill s)    ++ "\n" ++
+           "Sauces: "     ++ show (saucing s)
 
 -- | List of all the bread options
 breadOptions :: [Bread]
@@ -47,6 +48,10 @@ veggieOpts = ["lettuce","tomato","red onion", "caramelized onion", "white onion"
 -- | List of all the sauces
 sauceOpts :: [Sauce]
 sauceOpts = ["bbq","cool ranch","mayo"]
+
+-- | List of mixed fillings
+mixed :: [String]
+mixed = veggieOpts ++ nonVeggieOpts
 
 ---------------------
 {- Main Functions -}
@@ -87,27 +92,66 @@ sandwichChoices breads fillings sauces = Sandwich <$> breads           <*> filli
 
 main :: IO ()
 main = do
-  putStrLn $ frame "Welcome to OverRoad "
-  userInput <- putStr "Would you like to see an exclusive list of vegetarian options for your filling? (Y/N)" >> getLine
-  if (map toLower userInput) !! 0 == 'y' then prettyPrintList veggieOpts else prettyPrintList (veggieOpts ++ nonVeggieOpts)
+  putStrLn $ frame "Welcome to OverRoad"
+
+  fillingInput <- putStr "Would you like to see an exclusive list of vegetarian options for your filling? (Y/N) " >> getLine
+
+  putStrLn "Currently, we have the following ingredients:"
+  putStrLn $ if (map toLower fillingInput) !! 0 == 'y' then prettyPrintList veggieOpts else prettyPrintList mixed
+  putStrLn "If you would like to beto some ingredients, please do so using the following format: index of item1 index of item 2..."
+  putStrLn "Eg: 1 5 3"
+
+  betos <- getLine
+
+  userInput <- (putStr "Would you like to limit the number of fillings (Y/N): " >> getLine)
+
+  numberOfFillings <- case (map toLower userInput) !! 0 of
+    'y' -> putStr "Please input the number of fillings you would like to consider: " >> getLine
+    _ -> (return . show . length) mixed
+
+  putStrLn "Please select the sauces you would like to consider (do so using the following format: index of item1 index of item 2...): "
+  putStrLn "Eg: 1 5 3"
+  putStrLn $ prettyPrintList sauceOpts
+
+  saucesToConsider <- getLine
+
+  printFilteredSandwich fillingInput betos
+
+
+  return ()
 
 
 --------------------
 {- Aux Functions -}
 --------------------
+-- | Given a list of printable objects, yields an enumerated list with
+-- the string representation of each object.
+prettyPrintList :: Show a => [a] -> String
+prettyPrintList list = concatMap printItem (zip [1..] list) where
+  --                      ^          ^             ^
+  --                      ^          ^      We zip each element with a number
+  --                      ^          ^
+  --                      ^ then we print each item
+  --                      ^
+  --                  and we combine the results using concat.
+  -- Print item just tells you how each item is printed.
+  printItem = \(index,item) -> show index ++ ") " ++ show item ++ "\n"
 
-prettyPrintList :: Show a => [a] -> IO ()
-prettyPrintList = undefined
-
--- | Frames a title. Eg:
+-- | Frames a text. Eg:
 --                                ---------------------
 -- frame "Welome to OverRoad" =  | Welcome to OverRoad |
 --                                ---------------------
 frame :: String -> String
-frame s = line ++ "\n" ++ "| " ++ s ++ " |" ++ "\n" ++ line where
+frame s = line ++ "\n" ++  paddedString ++ line where
   -- The length of the top and bottom line must equal to the length of
-  -- the string + 2 since we are adding a little pad to the sides
-  line = " " ++ replicate (length s + 2) '-'
+  -- the max line + 2 since we are adding a little pad to the sides
+  line = " " ++ replicate (maxLine + 2) '-'
+  -- We get the text by lines
+  wholeTextByLines = lines s
+  -- We get the length of the max line
+  maxLine = maximum $ map length wholeTextByLines
+  -- Finally, we add the | line | pad.
+  paddedString = concatMap (\s -> "| " ++ s ++ " |\n") wholeTextByLines
 
 -- | Gets the n-combinations of a  set of elements.
 combs :: Int -> [a] -> [[a]]
